@@ -177,6 +177,56 @@ realities. The seed controls the random number generator, making the computation
 repeatable, but the output deliberately shows many possible trajectories because no
 finite model can collapse the future to a single path.
 
+## Why the Seed?
+
+The system produces a branching tree of scenario outcomes, not a single prediction.
+Two questions arise: why does it branch, and why does it need a seed?
+
+### The branching tree models epistemic uncertainty
+
+The tree shows multiple scenario branches not because the system is "unsure" in some
+vague sense, but because *you* lack complete information. You do not know every other
+person's intentions, every market condition, or your own future psychology. The tree is
+a map of the consequence space given what the model can extract from your input. A
+single deterministic path would require omniscience.
+
+### The seed pins down the unknowns
+
+The seed controls the random number generator that determines which consequences are
+selected, how probabilities are distributed, and what noise is injected at each depth.
+Without a seed, every run would produce a different tree -- not because the situation
+changed, but because the random sampling changed. That would make the output unreliable
+and unanalyzable.
+
+The seed says: *given this exact snapshot of a situation, here is one fully specified
+projection of the consequence space.* A different seed produces a different but equally
+valid projection -- like two analysts modeling the same scenario with different
+assumptions.
+
+### Different seeds are an ensemble
+
+This is analogous to ensemble forecasting in meteorology. A weather model run with
+different initial conditions produces a spread of forecasts. No single run is "the"
+prediction. The spread tells you how sensitive the outcome is to unknowns. In Simulus,
+running the same input with different seeds produces different but equally valid
+scenario trees, and the variance between them reflects the model's sensitivity to
+micro-level assumptions.
+
+### The seed makes sensitivity analysis rigorous
+
+Butterfly mode applies a tiny perturbation and compares the resulting trajectories. This
+only works *because* the seed holds everything else constant. Without it, you could not
+distinguish "the outcome changed because I perturbed it" from "the outcome changed
+because the random sampling was different." The seed is what makes the sensitive
+dependence demonstration isolable and repeatable.
+
+| Concept | Role |
+|---------|------|
+| Branching tree | Models epistemic uncertainty -- you do not know which path will unfold |
+| Seed | Pins down random micro-variables so the projection is reproducible |
+| Different seeds | Different equally valid projections of the same scenario |
+| Butterfly mode | Only meaningful because the seed holds everything else constant |
+
 ## Project Structure
 
 ```
