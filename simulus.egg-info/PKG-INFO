@@ -1,0 +1,210 @@
+Metadata-Version: 2.4
+Name: simulus
+Version: 0.1.0
+Summary: The Butterfly Effect Engine -- a deterministic probabilistic reasoning engine that simulates how decisions cascade into divergent futures.
+Author: Qubitalgo
+License: MIT
+Project-URL: Homepage, https://github.com/qubitalgo/simulus
+Project-URL: Repository, https://github.com/qubitalgo/simulus
+Keywords: simulation,determinism,butterfly-effect,bayesian,causal-inference,chaos-theory
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Education
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: Topic :: Scientific/Engineering :: Mathematics
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: spacy>=3.7
+Requires-Dist: rich>=13.0
+Requires-Dist: numpy>=1.24
+Requires-Dist: networkx>=3.0
+Requires-Dist: click>=8.0
+Dynamic: license-file
+
+# Simulus
+
+**The Butterfly Effect Engine**
+
+A deterministic probabilistic reasoning engine that simulates how small decisions
+cascade into radically different futures. Describe any situation, make a choice,
+and watch reality branch.
+
+---
+
+## What is this?
+
+Simulus is a terminal-based simulation tool built on a simple philosophical premise:
+if the universe is deterministic, then every decision you make has consequences that
+ripple forward through time in predictable (but chaotic) ways.
+
+You describe a situation in plain English. Simulus parses it, builds a causal graph
+of possible decisions and their consequences, assigns probabilities using Bayesian
+reasoning, and simulates your future 6 levels deep.
+
+Then it shows you the butterfly effect: change one tiny probability by 1%, and watch
+your entire future rearrange itself.
+
+## How it works
+
+Simulus is not a chatbot and it is not a wrapper around an LLM. It is a custom-built
+probabilistic reasoning engine with four distinct stages:
+
+### 1. Situation Parser
+
+Natural language processing extracts the key elements from your input: who is involved,
+what is at stake, the environment, and the emotional context. This uses spaCy for
+dependency parsing and entity extraction.
+
+### 2. Causal Graph Builder
+
+A directed acyclic graph is constructed where each node is a state of the world and
+each edge is a possible action or consequence. The graph branches at decision points
+and cascades through 6 levels of cause and effect. Built on networkx.
+
+### 3. Bayesian Probability Engine
+
+Each branch in the graph is assigned a conditional probability using Bayesian inference.
+Probabilities are not guessed -- they are computed from prior distributions and updated
+as evidence flows through the graph.
+
+### 4. Butterfly Effect Simulator
+
+A Lyapunov-style chaos multiplier is applied at each depth level. Small differences
+in initial probabilities are amplified exponentially as they cascade through the tree.
+A Monte Carlo simulator runs 10,000 iterations to produce statistical distributions
+of outcomes.
+
+## Features
+
+**Interactive mode** -- Describe any situation and explore branching futures in a
+cinematic terminal interface.
+
+**Replay mode** -- Re-run any simulation with the same seed and get byte-identical
+results. Rewind to any decision point and take the other path. See how your life
+diverges.
+
+**Butterfly mode** -- Apply a tiny perturbation (0.01 change in one probability) and
+compare the two resulting futures side by side. Witness the butterfly effect in action.
+
+**Deterministic by design** -- Same seed, same input, same future. Every time. This is
+the philosophical core of the project: in a deterministic universe, the future is fixed.
+The only variable is your knowledge of the initial conditions.
+
+## Installation
+
+```
+pip install simulus
+```
+
+Or from source:
+
+```
+git clone https://github.com/qubitalgo/simulus.git
+cd simulus
+pip install -e .
+```
+
+## Usage
+
+### Interactive mode
+
+```
+simulus
+```
+
+You will be prompted to describe a situation. The engine will generate a decision tree
+and animate it in your terminal.
+
+### With a specific scenario
+
+```
+simulus --scenario "I am about to quit my job to start a company"
+```
+
+### Replay with a seed
+
+```
+simulus --scenario "asking for a raise at lunch" --seed 42
+```
+
+Run this twice. You will get the exact same future both times.
+
+### Butterfly mode
+
+```
+simulus --scenario "asking for a raise at lunch" --seed 42 --butterfly
+```
+
+Watch two nearly identical realities diverge into completely different futures.
+
+### Replay alternate track
+
+```
+simulus --scenario "asking for a raise at lunch" --seed 42 --rewind 2
+```
+
+Rewind to decision point 2 and take the path not taken.
+
+## Dependencies
+
+- Python 3.10+
+- spaCy -- natural language parsing
+- rich -- terminal rendering
+- numpy -- probability computation
+- networkx -- causal graph structure
+- click -- CLI interface
+
+## The Philosophy
+
+This project is a computational exploration of determinism, chaos theory, and the
+nature of choice.
+
+Laplace argued in 1814 that a sufficiently powerful intellect, knowing the position
+and momentum of every particle, could predict the entire future. Simulus is a small
+step toward that demon -- a system that takes a snapshot of a situation and extrapolates
+the consequences.
+
+But it also demonstrates why Laplace's Demon is impossible in practice. Chaos theory
+shows that infinitesimally small differences in initial conditions lead to exponentially
+divergent outcomes. The butterfly effect is not a metaphor -- it is a mathematical
+property of nonlinear dynamical systems, and Simulus makes it visible.
+
+The deterministic seed system is the philosophical punchline: your future was decided
+the moment the seed was set. Free will is an illusion. But what an illusion it is.
+
+## Project Structure
+
+```
+simulus/
+  core/
+    parser.py          -- NLP situation parser
+    causal_graph.py    -- Directed acyclic graph of consequences
+    bayesian.py        -- Bayesian probability engine
+    chaos.py           -- Butterfly effect / Lyapunov multiplier
+    montecarlo.py      -- Monte Carlo future simulator
+  renderer/
+    tree.py            -- Animated ASCII tree
+    effects.py         -- Visual effects (typewriter, colors, particles)
+    rewind.py          -- Split-screen alternate timeline viewer
+  cli.py               -- Main entry point
+  seed.py              -- Deterministic seed manager
+tests/
+```
+
+## License
+
+MIT
+
+## Contributing
+
+Simulus is open source. Contributions are welcome. See the issues tab for things that
+need doing.
+
+Keep the code clean, the comments minimal, and the math rigorous.

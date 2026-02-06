@@ -1,0 +1,2 @@
+[console_scripts]
+simulus = simulus.cli:main

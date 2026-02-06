@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "simulus"
+version = "0.1.0"
+description = "The Butterfly Effect Engine -- a deterministic probabilistic reasoning engine that simulates how decisions cascade into divergent futures."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Qubitalgo"},
+]
+keywords = ["simulation", "determinism", "butterfly-effect", "bayesian", "causal-inference", "chaos-theory"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+dependencies = [
+    "spacy>=3.7",
+    "rich>=13.0",
+    "numpy>=1.24",
+    "networkx>=3.0",
+    "click>=8.0",
+]
+
+[project.scripts]
+simulus = "simulus.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/qubitalgo/simulus"
+Repository = "https://github.com/qubitalgo/simulus"
+
+[tool.setuptools.packages.find]
+include = ["simulus*"]
