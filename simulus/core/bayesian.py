@@ -32,6 +32,21 @@ TRANSITION_MATRIX: dict[str, dict[str, float]] = {
     "neutral":  {"positive": 0.35, "negative": 0.30, "neutral": 0.35},
 }
 
+# 2nd-order transitions: when grandparent and parent share a sentiment,
+# a streak bonus amplifies continuation.  This models real-world momentum
+# where sustained good/bad runs are self-reinforcing.
+STREAK_BONUS: dict[str, dict[str, float]] = {
+    "positive": {"positive": 0.10, "negative": -0.05, "neutral": -0.05},
+    "negative": {"positive": -0.05, "negative": 0.10, "neutral": -0.05},
+    "neutral":  {"positive": 0.00, "negative": 0.00, "neutral": 0.00},
+}
+
+# mean-reversion coefficients: extreme outcomes at deep levels tend
+# toward the center.  This prevents runaway positive/negative spirals
+# that are unrealistic in most real-life scenarios.
+MEAN_REVERSION_STRENGTH = 0.08
+MEAN_REVERSION_DEPTH_THRESHOLD = 3
+
 EMOTION_MODIFIERS: dict[str, dict[str, float]] = {
     "anxious":    {"positive": -0.10, "negative": 0.10, "neutral": 0.00},
     "confident":  {"positive": 0.15, "negative": -0.10, "neutral": -0.05},
@@ -121,6 +136,50 @@ def _apply_feedback_modifier(priors: dict[str, float],
     return _normalize(adjusted)
 
 
+def _apply_streak_bonus(priors: dict[str, float],
+                        parent: CausalNode,
+                        cg: CausalGraph) -> dict[str, float]:
+    predecessors = list(cg.graph.predecessors(parent.node_id))
+    if not predecessors:
+        return priors
+
+    grandparent = cg.get_node(predecessors[0])
+    if grandparent.sentiment != parent.sentiment:
+        return priors
+
+    streak_key = parent.sentiment.value
+    bonus = STREAK_BONUS.get(streak_key, STREAK_BONUS["neutral"])
+    adjusted = {k: priors[k] + bonus[k] for k in priors}
+    return _normalize(adjusted)
+
+
+def _apply_mean_reversion(priors: dict[str, float],
+                          depth: int) -> dict[str, float]:
+    if depth < MEAN_REVERSION_DEPTH_THRESHOLD:
+        return priors
+
+    depth_factor = (depth - MEAN_REVERSION_DEPTH_THRESHOLD + 1) * MEAN_REVERSION_STRENGTH
+    neutral_center = 1.0 / len(priors)
+    adjusted = {}
+    for k, v in priors.items():
+        adjusted[k] = v + depth_factor * (neutral_center - v)
+    return _normalize(adjusted)
+
+
+def _apply_depth_uncertainty(priors: dict[str, float],
+                             depth: int,
+                             seed_mgr: SeedManager) -> dict[str, float]:
+    if depth <= 2:
+        return priors
+
+    spread = 0.015 * (depth - 2)
+    adjusted = {}
+    for k, v in priors.items():
+        noise = seed_mgr.normal(0.0, spread)
+        adjusted[k] = v + noise
+    return _normalize(adjusted)
+
+
 def compute_node_probability(node: CausalNode, parent: CausalNode | None,
                              domain: str, emotional_state: str,
                              seed_mgr: SeedManager,
@@ -142,9 +201,12 @@ def compute_node_probability(node: CausalNode, parent: CausalNode | None,
         adjusted = _apply_power_modifier(adjusted, context)
         adjusted = _apply_severity_shift(adjusted, context.stake_severity)
 
-    # apply feedback edge effects if graph is available
     if cg:
         adjusted = _apply_feedback_modifier(adjusted, node, cg)
+        adjusted = _apply_streak_bonus(adjusted, parent, cg)
+
+    adjusted = _apply_mean_reversion(adjusted, node.depth)
+    adjusted = _apply_depth_uncertainty(adjusted, node.depth, seed_mgr)
 
     # actor reaction nodes get a modifier based on the actor's power dynamic
     if node.node_type == NodeType.ACTOR_REACTION and context:

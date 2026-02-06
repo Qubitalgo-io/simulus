@@ -5,14 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "simulus"
 version = "0.1.0"
-description = "The Butterfly Effect Engine -- a deterministic probabilistic reasoning engine that simulates how decisions cascade into divergent futures."
+description = "The Sensitive Dependence Engine -- a seed-reproducible scenario simulation engine that models how decisions cascade into divergent outcome trajectories."
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
 authors = [
     {name = "Qubitalgo"},
 ]
-keywords = ["simulation", "determinism", "butterfly-effect", "bayesian", "causal-inference", "chaos-theory"]
+keywords = ["simulation", "sensitive-dependence", "butterfly-effect", "causal-inference", "chaos-theory", "scenario-analysis"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",

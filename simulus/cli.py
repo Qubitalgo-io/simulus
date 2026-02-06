@@ -7,7 +7,7 @@ from simulus.seed import SeedManager
 from simulus.core.parser import parse_situation
 from simulus.core.causal_graph import build_causal_graph
 from simulus.core.bayesian import update_graph_probabilities, expected_sentiment_score
-from simulus.core.chaos import create_perturbed_graph, fate_divergence_score
+from simulus.core.chaos import create_perturbed_graph, trajectory_divergence_score
 from simulus.core.montecarlo import run_monte_carlo
 from simulus.renderer.tree import render_tree, render_monte_carlo_results
 from simulus.renderer.effects import header_banner, chaos_reveal, typewriter
@@ -24,7 +24,7 @@ MONTE_CARLO_RUNS = 10_000
 @click.option("--scenario", "-s", type=str, default=None,
               help="Describe a situation to simulate.")
 @click.option("--seed", type=int, default=None,
-              help="Deterministic seed. Same seed + input = same future.")
+              help="Reproducible seed. Same seed + input = same scenario tree.")
 @click.option("--butterfly", "-b", is_flag=True, default=False,
               help="Enable butterfly mode: apply a small perturbation and compare.")
 @click.option("--perturbation", "-p", type=float, default=DEFAULT_PERTURBATION,
@@ -46,7 +46,7 @@ def main(scenario: str | None, seed: int | None, butterfly: bool,
 
     header_banner(
         "S I M U L U S",
-        "The Butterfly Effect Engine",
+        "The Sensitive Dependence Engine",
         console,
     )
 
@@ -90,7 +90,7 @@ def main(scenario: str | None, seed: int | None, butterfly: bool,
 
     sentiment = expected_sentiment_score(graph)
     sentiment_color = "green" if sentiment > 0.1 else ("red" if sentiment < -0.1 else "yellow")
-    console.print(f"  Overall fate score: [{sentiment_color}]{sentiment:+.3f}[/{sentiment_color}]")
+    console.print(f"  Overall trajectory score: [{sentiment_color}]{sentiment:+.3f}[/{sentiment_color}]")
     console.print()
 
     butterfly_divergence = None
@@ -120,7 +120,7 @@ def main(scenario: str | None, seed: int | None, butterfly: bool,
     ))
     console.print()
 
-    typewriter("  The future is determined. The seed is set.", console,
+    typewriter("  The seed is set. The branches are drawn.", console,
                delay=0.05, style="dim white")
     console.print()
 
@@ -129,7 +129,7 @@ def _run_butterfly_mode(graph, perturbation, seed_mgr, console, context=None):
     perturbed_seed = seed_mgr.fork("butterfly")
     perturbed = create_perturbed_graph(graph, perturbation, perturbed_seed,
                                        context=context)
-    divergence = fate_divergence_score(graph, perturbed)
+    divergence = trajectory_divergence_score(graph, perturbed)
     chaos_reveal(perturbation, divergence, console)
 
     render_rewind(
@@ -151,7 +151,7 @@ def _run_rewind_mode(graph, context, seed_mgr, rewind_point, depth, console):
                                context.emotional_state, alt_bayesian_seed,
                                context=context)
 
-    divergence = fate_divergence_score(graph, alt_graph)
+    divergence = trajectory_divergence_score(graph, alt_graph)
 
     render_rewind(
         graph, alt_graph, divergence,

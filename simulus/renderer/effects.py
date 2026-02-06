@@ -84,15 +84,15 @@ def chaos_reveal(perturbation: float, divergence: float,
 
     color = "red" if divergence > 50 else ("yellow" if divergence > 20 else "green")
     console.print(f"  Initial perturbation:  [dim]{perturbation:+.4f}[/dim]")
-    console.print(f"  Fate divergence:       [{color}]{divergence:.1f}%[/{color}]")
+    console.print(f"  Trajectory divergence:  [{color}]{divergence:.1f}%[/{color}]")
 
     if divergence > 70:
-        typewriter("  Two completely different lives.", console,
+        typewriter("  Two completely different trajectories.", console,
                    delay=0.05, style="bold red")
     elif divergence > 40:
-        typewriter("  The futures have meaningfully diverged.", console,
+        typewriter("  The scenario branches have meaningfully diverged.", console,
                    delay=0.05, style="bold yellow")
     else:
-        typewriter("  The butterfly barely flapped.", console,
+        typewriter("  Minimal sensitivity to the perturbation.", console,
                    delay=0.05, style="dim green")
     console.print()

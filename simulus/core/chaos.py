@@ -30,7 +30,7 @@ def compute_adaptive_exponent(context: SituationContext | None = None) -> float:
     # compound_volatility factors in time pressure, irreversibility, conflicts
     volatility_boost = context.compound_volatility * 0.3
 
-    # stake severity amplifies chaos -- higher stakes, less predictable
+    # stake severity amplifies sensitivity -- higher stakes, less predictable
     severity_boost = context.stake_severity * 0.15
 
     # actor count: more actors means more interaction effects
@@ -124,9 +124,13 @@ def compute_graph_divergence(graph_a: CausalGraph,
     return sum(divergences) / len(divergences)
 
 
-def fate_divergence_score(graph_a: CausalGraph,
-                          graph_b: CausalGraph) -> float:
+def trajectory_divergence_score(graph_a: CausalGraph,
+                                graph_b: CausalGraph) -> float:
     """Human-readable divergence score as a percentage.
-    0% = identical futures. 100% = completely different futures."""
+    0% = identical outcome distributions. 100% = maximally divergent trajectories."""
     raw = compute_graph_divergence(graph_a, graph_b)
     return round(raw * 100, 1)
+
+
+# backward-compatible alias
+fate_divergence_score = trajectory_divergence_score

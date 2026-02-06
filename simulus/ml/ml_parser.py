@@ -6,7 +6,7 @@ from pathlib import Path
 import torch
 from transformers import DistilBertTokenizer, DistilBertModel
 
-from simulus.ml.train import SituationClassifier, DOMAINS, EMOTIONS, MODEL_DIR
+from simulus.ml.train import SituationClassifier, DOMAINS, EMOTIONS, MODEL_DIR, N_UNFROZEN_LAYERS
 
 
 _cached_model: SituationClassifier | None = None
@@ -28,13 +28,22 @@ def _load_model() -> tuple[SituationClassifier, DistilBertTokenizer, torch.devic
 
     tokenizer = DistilBertTokenizer.from_pretrained(str(MODEL_DIR / "tokenizer"))
 
-    model = SituationClassifier().to(device)
+    meta_path = MODEL_DIR / "meta.json"
+    n_unfrozen = N_UNFROZEN_LAYERS
+    if meta_path.exists():
+        with open(meta_path) as f:
+            meta = json.load(f)
+        n_unfrozen = meta.get("n_unfrozen", N_UNFROZEN_LAYERS)
+
+    model = SituationClassifier(n_unfrozen=n_unfrozen).to(device)
 
     state = torch.load(MODEL_DIR / "classifier.pt", map_location=device, weights_only=True)
     model.shared.load_state_dict(state["shared"])
     model.domain_head.load_state_dict(state["domain_head"])
     model.emotion_head.load_state_dict(state["emotion_head"])
-    model.bert.transformer.layer[-2:].load_state_dict(state["bert_layers"])
+
+    saved_n = state.get("n_unfrozen", n_unfrozen)
+    model.bert.transformer.layer[-saved_n:].load_state_dict(state["bert_layers"])
 
     model.eval()
 

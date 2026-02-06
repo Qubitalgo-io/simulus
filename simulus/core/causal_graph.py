@@ -492,6 +492,12 @@ CONTEXTUAL_DECISIONS: dict[str, list[dict]] = {
         {"label": "Negotiate a safer middle path",
          "description": "Seek a compromise that limits downside",
          "risk_level": 0.3, "reward_potential": 0.5},
+        {"label": "Maintain the status quo",
+         "description": "Stay the current course and avoid disruption",
+         "risk_level": 0.1, "reward_potential": 0.2},
+        {"label": "Delay and gather more information",
+         "description": "Buy time to reduce uncertainty before committing",
+         "risk_level": 0.2, "reward_potential": 0.4},
     ],
     "relationship": [
         {"label": "Address it honestly and directly",
@@ -500,6 +506,12 @@ CONTEXTUAL_DECISIONS: dict[str, list[dict]] = {
         {"label": "Give it time and space",
          "description": "Allow the situation to evolve naturally",
          "risk_level": 0.3, "reward_potential": 0.4},
+        {"label": "Do nothing and accept the dynamic",
+         "description": "Let the relationship stay as it is",
+         "risk_level": 0.1, "reward_potential": 0.15},
+        {"label": "Seek outside counsel first",
+         "description": "Talk to a therapist, friend, or mediator before acting",
+         "risk_level": 0.2, "reward_potential": 0.5},
     ],
     "health": [
         {"label": "Act on it immediately",
@@ -508,6 +520,12 @@ CONTEXTUAL_DECISIONS: dict[str, list[dict]] = {
         {"label": "Monitor and wait for clarity",
          "description": "Gather more information before acting",
          "risk_level": 0.5, "reward_potential": 0.4},
+        {"label": "Ignore it and hope it resolves",
+         "description": "Avoid medical action and let time pass",
+         "risk_level": 0.7, "reward_potential": 0.1},
+        {"label": "Get a second opinion",
+         "description": "Consult another professional before deciding",
+         "risk_level": 0.2, "reward_potential": 0.5},
     ],
     "finance": [
         {"label": "Commit capital to the opportunity",
@@ -516,6 +534,12 @@ CONTEXTUAL_DECISIONS: dict[str, list[dict]] = {
         {"label": "Preserve capital and wait",
          "description": "Protect existing resources",
          "risk_level": 0.2, "reward_potential": 0.3},
+        {"label": "Make a partial move and hedge",
+         "description": "Split the difference to limit exposure",
+         "risk_level": 0.4, "reward_potential": 0.5},
+        {"label": "Consult an expert before acting",
+         "description": "Seek professional financial advice",
+         "risk_level": 0.15, "reward_potential": 0.4},
     ],
     "education": [
         {"label": "Pursue the ambitious path",
@@ -524,6 +548,12 @@ CONTEXTUAL_DECISIONS: dict[str, list[dict]] = {
         {"label": "Consolidate current position",
          "description": "Strengthen foundations before advancing",
          "risk_level": 0.2, "reward_potential": 0.4},
+        {"label": "Take a break and reassess",
+         "description": "Step back to gain perspective on direction",
+         "risk_level": 0.3, "reward_potential": 0.35},
+        {"label": "Explore an alternative route",
+         "description": "Consider a non-traditional educational path",
+         "risk_level": 0.4, "reward_potential": 0.6},
     ],
     "travel": [
         {"label": "Go -- commit to the change",
@@ -532,6 +562,12 @@ CONTEXTUAL_DECISIONS: dict[str, list[dict]] = {
         {"label": "Stay and build where you are",
          "description": "Invest in the known environment",
          "risk_level": 0.2, "reward_potential": 0.5},
+        {"label": "Try a short-term test first",
+         "description": "Visit or do a trial stay before committing",
+         "risk_level": 0.3, "reward_potential": 0.5},
+        {"label": "Postpone until circumstances change",
+         "description": "Wait for a better window to make the move",
+         "risk_level": 0.15, "reward_potential": 0.3},
     ],
     "general": [
         {"label": "Act decisively now",
@@ -540,6 +576,12 @@ CONTEXTUAL_DECISIONS: dict[str, list[dict]] = {
         {"label": "Deliberate and prepare further",
          "description": "Invest more time before committing",
          "risk_level": 0.2, "reward_potential": 0.4},
+        {"label": "Do nothing and let events unfold",
+         "description": "Accept the status quo for now",
+         "risk_level": 0.1, "reward_potential": 0.15},
+        {"label": "Seek input from others",
+         "description": "Gather external perspectives before choosing",
+         "risk_level": 0.15, "reward_potential": 0.4},
     ],
 }
 
@@ -588,14 +630,106 @@ _DEPTH_QUALIFIERS: dict[int, list[str]] = {
 }
 
 
+# context-derived consequence fragments: these combine with parsed stakes and
+# actors to generate situation-specific labels for any input, especially those
+# that land in the "general" domain.
+_CONTEXT_CONSEQUENCE_FRAMES: dict[str, list[str]] = {
+    "positive": [
+        "The situation around {stake} begins to resolve",
+        "Progress on {stake} exceeds expectations",
+        "An unexpected advantage emerges regarding {stake}",
+        "Confidence grows as {stake} stabilizes",
+        "{actor} responds favorably to the shift",
+        "New options open up around {stake}",
+    ],
+    "negative": [
+        "Complications around {stake} intensify",
+        "{stake} becomes harder to manage",
+        "An overlooked risk involving {stake} materializes",
+        "Pressure mounts as {stake} deteriorates",
+        "{actor} reacts poorly to the development",
+        "The cost of inaction on {stake} grows",
+    ],
+    "neutral": [
+        "The dynamic around {stake} shifts subtly",
+        "{stake} enters a holding pattern",
+        "{actor} takes a wait-and-see approach",
+        "New information about {stake} changes the calculus",
+        "External factors reshape the {stake} situation",
+        "The timeline for {stake} stretches unexpectedly",
+    ],
+}
+
+
+def _generate_context_consequences(context: SituationContext,
+                                   sentiment_key: str,
+                                   seed_mgr: SeedManager,
+                                   count: int = 2) -> list[dict]:
+    """Generate consequences by composing from the situation's own stakes and actors.
+    This ensures any arbitrary input produces meaningful, non-generic labels."""
+    frames = _CONTEXT_CONSEQUENCE_FRAMES.get(
+        sentiment_key, _CONTEXT_CONSEQUENCE_FRAMES["neutral"])
+
+    stakes = context.stakes if context.stakes else ["the situation"]
+    actor_names = ([a.name.title() for a in context.actor_profiles[:3]]
+                   if context.actor_profiles else ["Someone nearby"])
+
+    sentiment_map = {
+        "positive": Sentiment.POSITIVE,
+        "negative": Sentiment.NEGATIVE,
+        "neutral": Sentiment.NEUTRAL,
+    }
+
+    mechanism_options = {
+        "positive": ["favorable alignment", "compound advantage", "social proof",
+                     "positive momentum", "reduced uncertainty"],
+        "negative": ["compounding pressure", "cascading risk", "social friction",
+                     "diminishing runway", "unintended side effect"],
+        "neutral": ["gradual adaptation", "information shift", "external constraint",
+                    "temporal drift", "interdependence"],
+    }
+
+    result = []
+    available = list(range(len(frames)))
+    for _ in range(count):
+        if not available:
+            available = list(range(len(frames)))
+        idx_pos = seed_mgr.integers(0, len(available))
+        frame_idx = available.pop(idx_pos)
+        frame = frames[frame_idx]
+
+        stake = stakes[seed_mgr.integers(0, len(stakes))]
+        actor = actor_names[seed_mgr.integers(0, len(actor_names))]
+        label = frame.format(stake=stake, actor=actor)
+
+        mechanisms = mechanism_options.get(sentiment_key, mechanism_options["neutral"])
+        mechanism = mechanisms[seed_mgr.integers(0, len(mechanisms))]
+
+        result.append({
+            "label": label,
+            "sentiment": sentiment_map.get(sentiment_key, Sentiment.NEUTRAL),
+            "mechanism": mechanism,
+        })
+
+    return result
+
+
 def _pick_contextual_consequences(domain: str, sentiment_key: str,
                                   seed_mgr: SeedManager,
                                   count: int = 2,
                                   depth: int = 2,
-                                  used_labels: set[str] | None = None) -> list[dict]:
+                                  used_labels: set[str] | None = None,
+                                  context: SituationContext | None = None) -> list[dict]:
     domain_consequences = CONTEXTUAL_CONSEQUENCES.get(
         domain, CONTEXTUAL_CONSEQUENCES["general"])
     chain = domain_consequences.get(sentiment_key, domain_consequences["neutral"])
+
+    # for non-specific domains, mix in context-derived consequences
+    # so arbitrary inputs get situation-specific labels
+    if context is not None and domain == "general":
+        ctx_consequences = _generate_context_consequences(
+            context, sentiment_key, seed_mgr, count=len(chain))
+        chain = chain + ctx_consequences
 
     # build a priority list that avoids recently-used labels
     if used_labels is None:
@@ -742,7 +876,7 @@ def _expand_branch(cg: CausalGraph, parent: CausalNode, decision: dict,
 
             consequences = _pick_contextual_consequences(
                 context.domain, current_sentiment, seed_mgr, count=2,
-                depth=depth, used_labels=used_labels)
+                depth=depth, used_labels=used_labels, context=context)
 
             for cons in consequences:
                 used_labels.add(cons["label"])

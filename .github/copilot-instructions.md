@@ -12,27 +12,27 @@
 
 ## Architecture
 
-Simulus is a deterministic probabilistic reasoning engine that models the butterfly effect
-of human decisions. It is a pure Python project.
+Simulus is a seed-reproducible scenario simulation engine that models the sensitive
+dependence of human decisions on initial conditions. It is a pure Python project.
 
 ### Core Engine (`simulus/core/`)
 - `parser.py` -- NLP situation parser using spaCy. Extracts actors, stakes, environment, emotional state.
 - `causal_graph.py` -- Builds a directed acyclic graph of decisions and consequences using networkx.
-- `bayesian.py` -- Bayesian probability engine. Computes conditional probabilities for each branch.
-- `chaos.py` -- Butterfly effect module. Applies Lyapunov-style chaos multipliers at each depth level.
+- `bayesian.py` -- Parameterized probability scoring engine. Computes conditional probabilities for each branch using domain priors, Markov transitions, and heuristic modifiers. Not Bayesian in the textbook sense.
+- `chaos.py` -- Sensitive dependence module. Applies Lyapunov-style chaos multipliers at each depth level.
 - `montecarlo.py` -- Monte Carlo simulator. Runs N simulations to produce statistical distributions.
-- `seed.py` -- Deterministic seed manager. Same seed and input must always produce the same output.
+- `seed.py` -- Seed-reproducible random number manager. Same seed and input must always produce the same output.
 
 ### Renderer (`simulus/renderer/`)
 - `tree.py` -- Animated ASCII tree rendering using rich.
 - `effects.py` -- Visual effects: typewriter text, color gradients, particle ripples.
-- `rewind.py` -- Split-screen replay mode showing two divergent realities side by side.
+- `rewind.py` -- Split-screen replay mode showing two divergent scenario branches side by side.
 
 ### CLI (`simulus/cli.py`)
 - Entry point. Uses click for argument parsing.
-- Interactive mode: user describes a situation, engine simulates futures.
+- Interactive mode: user describes a situation, engine projects scenario branches.
 - Replay mode: re-run with same seed, or rewind to a branch point and take the other path.
-- Butterfly mode: apply a small perturbation and compare outcome divergence.
+- Butterfly mode: apply a small perturbation and compare trajectory divergence.
 
 ## Design Principles
 

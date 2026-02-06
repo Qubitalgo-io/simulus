@@ -55,7 +55,7 @@ def render_rewind(graph_a: CausalGraph, graph_b: CausalGraph,
 
     console.print()
     divider(console, style="bold magenta")
-    typewriter("  REWIND MODE -- Two realities diverge", console,
+    typewriter("  REWIND MODE -- Two scenario branches diverge", console,
                delay=0.04, style="bold magenta")
     divider(console, style="bold magenta")
     console.print()
@@ -74,7 +74,7 @@ def render_rewind(graph_a: CausalGraph, graph_b: CausalGraph,
     color = "red" if divergence_score > 50 else (
         "yellow" if divergence_score > 20 else "green")
     console.print(
-        f"  Fate Divergence: [{color}][bold]{divergence_score:.1f}%[/bold][/{color}]"
+        f"  Trajectory Divergence: [{color}][bold]{divergence_score:.1f}%[/bold][/{color}]"
     )
 
     console.print()

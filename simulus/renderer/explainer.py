@@ -111,13 +111,13 @@ def _divergence_note(butterfly_divergence: float | None) -> str:
         return ""
     if butterfly_divergence < 1.0:
         return ("A small perturbation barely changes the outcome -- this "
-                "future is relatively stable against minor variations.")
+                "trajectory is relatively stable against minor variations.")
     if butterfly_divergence < 10.0:
         return ("A small perturbation produces noticeable divergence. "
-                "This future is sensitive to initial conditions.")
+                "This scenario exhibits sensitive dependence on initial conditions.")
     return ("Even a tiny change produces wildly different outcomes. "
-            "This is a true butterfly effect scenario -- prediction is "
-            "almost impossible beyond the immediate decision.")
+            "This is a textbook case of sensitive dependence -- the "
+            "trajectories diverge exponentially with depth.")
 
 
 def generate_explanation(context: SituationContext,
@@ -145,7 +145,7 @@ def generate_explanation(context: SituationContext,
     pos_pct = mc_result.sentiment_distribution.get("positive", 0) * 100
     neg_pct = mc_result.sentiment_distribution.get("negative", 0) * 100
     sections.append(
-        f"Across {mc_result.n_simulations:,} simulated futures, the overall "
+        f"Across {mc_result.n_simulations:,} simulated scenario branches, the overall "
         f"outlook is {sentiment_desc} -- {pos_pct:.0f}% of outcomes are "
         f"positive and {neg_pct:.0f}% are negative."
     )
@@ -176,16 +176,17 @@ def generate_explanation(context: SituationContext,
 
     # closing
     if sentiment_score > 0.1:
-        closing = ("The probabilities lean in your favor, but determinism "
-                   "does not mean certainty from your vantage point. "
-                   "The seed is set -- but you cannot see it.")
+        closing = ("The probabilities lean in your favor, but sensitive "
+                   "dependence on initial conditions means a small change "
+                   "could reshape everything. The seed is set -- but you "
+                   "cannot see all the variables.")
     elif sentiment_score < -0.1:
         closing = ("The probabilities suggest a difficult road ahead. "
                    "That does not make it the wrong road -- only the harder one. "
-                   "The seed is set -- but you cannot see it.")
+                   "The seed is set -- but you cannot see all the variables.")
     else:
-        closing = ("The future balances on a knife edge. Neither path clearly "
-                   "dominates. The seed is set -- but you cannot see it.")
+        closing = ("The trajectories balance on a knife edge. Neither path clearly "
+                   "dominates. The seed is set -- but you cannot see all the variables.")
 
     sections.append(closing)
 
