@@ -1,5 +1,14 @@
 from __future__ import annotations
 
+# NOTE: Despite the filename, this module does NOT implement Bayesian
+# inference in the textbook sense.  There is no likelihood function and
+# no evidence-conditioned posterior update.  Instead, it uses domain-
+# specific sentiment priors, first-order Markov transition matrices, and
+# a stack of additive heuristic modifiers (emotion, power, severity,
+# feedback) to score each node's conditional sentiment probability.
+# This is closer to a parameterized scoring model than to Bayes' theorem.
+# The name is kept for backward compatibility with the rest of the codebase.
+
 import numpy as np
 
 from simulus.core.causal_graph import CausalGraph, CausalNode, Sentiment, NodeType
@@ -49,8 +58,9 @@ SEVERITY_TRANSITION_SHIFT: dict[str, float] = {
 
 
 def _normalize(probs: dict[str, float]) -> dict[str, float]:
-    total = sum(max(0.01, v) for v in probs.values())
-    return {k: max(0.01, v) / total for k, v in probs.items()}
+    floored = {k: max(0.001, v) for k, v in probs.items()}
+    total = sum(floored.values())
+    return {k: v / total for k, v in floored.items()}
 
 
 def _apply_emotion_modifier(priors: dict[str, float],
@@ -180,6 +190,20 @@ def update_graph_probabilities(cg: CausalGraph, domain: str,
                 sibling.probability = (parent.probability if parent else 1.0) * normalized_p
                 edge = cg.get_edge(parent.node_id, sibling.node_id)
                 edge.probability = normalized_p
+
+    _normalize_leaf_probabilities(cg)
+
+
+def _normalize_leaf_probabilities(cg: CausalGraph) -> None:
+    leaves = cg.get_leaves()
+    if not leaves:
+        return
+    total = sum(leaf.probability for leaf in leaves)
+    if total <= 0 or abs(total - 1.0) < 1e-9:
+        return
+    scale = 1.0 / total
+    for leaf in leaves:
+        leaf.probability *= scale
 
 
 def compute_outcome_distribution(cg: CausalGraph) -> dict[str, float]:

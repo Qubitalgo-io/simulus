@@ -9,6 +9,7 @@ from simulus.core.chaos import (
     compute_adaptive_exponent,
 )
 from simulus.core.montecarlo import run_monte_carlo
+from simulus.renderer.explainer import generate_explanation
 
 
 class TestDeterminism:
@@ -291,3 +292,217 @@ class TestMonteCarlo:
         result = run_monte_carlo(graph, seed, n_simulations=1000)
         total = sum(result.sentiment_distribution.values())
         assert abs(total - 1.0) < 0.01
+
+
+class TestMLParser:
+
+    def test_model_available(self):
+        from simulus.ml.ml_parser import is_model_available
+        assert is_model_available()
+
+    def test_predict_returns_required_keys(self):
+        from simulus.ml.ml_parser import predict
+        result = predict("I want to quit my job and start a business")
+        assert "domain" in result
+        assert "domain_confidence" in result
+        assert "emotion" in result
+        assert "emotion_confidence" in result
+        assert "domain_distribution" in result
+        assert "emotion_distribution" in result
+
+    def test_predict_domain_career(self):
+        from simulus.ml.ml_parser import predict
+        result = predict("Should I ask my boss for a promotion")
+        assert result["domain"] == "career"
+        assert result["domain_confidence"] > 0.5
+
+    def test_predict_domain_health(self):
+        from simulus.ml.ml_parser import predict
+        result = predict("I need to decide whether to have the surgery")
+        assert result["domain"] == "health"
+
+    def test_predict_domain_finance(self):
+        from simulus.ml.ml_parser import predict
+        result = predict("Should I invest my savings in the stock market")
+        assert result["domain"] == "finance"
+
+    def test_predict_domain_travel(self):
+        from simulus.ml.ml_parser import predict
+        result = predict("I want to move to Japan and start a new life")
+        assert result["domain"] == "travel"
+
+    def test_predict_domain_relationship(self):
+        from simulus.ml.ml_parser import predict
+        result = predict("I am thinking about breaking up with my girlfriend")
+        assert result["domain"] == "relationship"
+
+    def test_predict_domain_education(self):
+        from simulus.ml.ml_parser import predict
+        result = predict("Should I go back to university for a masters degree")
+        assert result["domain"] == "education"
+
+    def test_confidence_between_zero_and_one(self):
+        from simulus.ml.ml_parser import predict
+        result = predict("some random decision I need to make")
+        assert 0.0 <= result["domain_confidence"] <= 1.0
+        assert 0.0 <= result["emotion_confidence"] <= 1.0
+
+    def test_distribution_sums_to_one(self):
+        from simulus.ml.ml_parser import predict
+        result = predict("I am worried about my health")
+        domain_total = sum(result["domain_distribution"].values())
+        emotion_total = sum(result["emotion_distribution"].values())
+        assert abs(domain_total - 1.0) < 0.01
+        assert abs(emotion_total - 1.0) < 0.01
+
+    def test_ml_integrated_into_parser(self):
+        ctx = parse_situation("I want to live abroad but all my friends and family are in Hong Kong")
+        assert ctx.domain == "travel"
+
+    def test_graceful_fallback_on_missing_model(self):
+        import simulus.core.parser as parser_module
+        original = parser_module._try_ml_parse
+
+        parser_module._try_ml_parse = lambda text: None
+        try:
+            ctx = parse_situation("I want to quit my job")
+            assert ctx.domain == "career"
+        finally:
+            parser_module._try_ml_parse = original
+
+
+class TestExplainer:
+
+    def _build_scenario(self, text: str, seed_val: int = 42):
+        seed = SeedManager(seed=seed_val)
+        ctx = parse_situation(text)
+        graph = build_causal_graph(ctx, seed, max_depth=6)
+        b_seed = seed.fork("bayesian")
+        update_graph_probabilities(graph, ctx.domain, ctx.emotional_state,
+                                   b_seed, context=ctx)
+        mc_seed = seed.fork("montecarlo")
+        mc_result = run_monte_carlo(graph, mc_seed, n_simulations=1000)
+        sentiment = expected_sentiment_score(graph)
+        return ctx, graph, mc_result, sentiment
+
+    def test_returns_nonempty_string(self):
+        ctx, graph, mc_result, sentiment = self._build_scenario("I want to quit my job")
+        explanation = generate_explanation(ctx, graph, mc_result, sentiment)
+        assert isinstance(explanation, str)
+        assert len(explanation) > 50
+
+    def test_contains_domain_label(self):
+        ctx, graph, mc_result, sentiment = self._build_scenario("I want to quit my job")
+        explanation = generate_explanation(ctx, graph, mc_result, sentiment)
+        assert "career" in explanation.lower()
+
+    def test_contains_simulation_count(self):
+        ctx, graph, mc_result, sentiment = self._build_scenario("I want to quit my job")
+        explanation = generate_explanation(ctx, graph, mc_result, sentiment)
+        assert "1,000" in explanation
+
+    def test_contains_outcome_percentages(self):
+        ctx, graph, mc_result, sentiment = self._build_scenario("Should I move abroad")
+        explanation = generate_explanation(ctx, graph, mc_result, sentiment)
+        assert "%" in explanation
+
+    def test_contains_volatility_note(self):
+        ctx, graph, mc_result, sentiment = self._build_scenario(
+            "I must immediately decide whether to accept a dangerous assignment"
+        )
+        explanation = generate_explanation(ctx, graph, mc_result, sentiment)
+        assert "volatile" in explanation.lower() or "stable" in explanation.lower() or "sensitive" in explanation.lower()
+
+    def test_butterfly_divergence_note_included(self):
+        ctx, graph, mc_result, sentiment = self._build_scenario("I want to quit my job")
+        explanation = generate_explanation(ctx, graph, mc_result, sentiment,
+                                           butterfly_divergence=15.0)
+        assert "butterfly" in explanation.lower() or "diverge" in explanation.lower() or "wildly" in explanation.lower()
+
+    def test_butterfly_divergence_none_no_crash(self):
+        ctx, graph, mc_result, sentiment = self._build_scenario("I want to quit my job")
+        explanation = generate_explanation(ctx, graph, mc_result, sentiment,
+                                           butterfly_divergence=None)
+        assert isinstance(explanation, str)
+
+    def test_closing_present(self):
+        ctx, graph, mc_result, sentiment = self._build_scenario("I want to quit my job")
+        explanation = generate_explanation(ctx, graph, mc_result, sentiment)
+        assert "seed is set" in explanation.lower()
+
+    def test_deterministic_output(self):
+        ctx_a, graph_a, mc_a, sent_a = self._build_scenario("I want to quit my job", seed_val=99)
+        ctx_b, graph_b, mc_b, sent_b = self._build_scenario("I want to quit my job", seed_val=99)
+        exp_a = generate_explanation(ctx_a, graph_a, mc_a, sent_a)
+        exp_b = generate_explanation(ctx_b, graph_b, mc_b, sent_b)
+        assert exp_a == exp_b
+
+
+class TestStatisticalValidity:
+
+    def _build_graph(self, text: str, seed_val: int = 42):
+        seed = SeedManager(seed=seed_val)
+        ctx = parse_situation(text)
+        graph = build_causal_graph(ctx, seed, max_depth=6)
+        b_seed = seed.fork("bayesian")
+        update_graph_probabilities(graph, ctx.domain, ctx.emotional_state,
+                                   b_seed, context=ctx)
+        return ctx, graph, seed
+
+    def test_leaf_probabilities_sum_to_one(self):
+        _, graph, _ = self._build_graph("I want to quit my job")
+        leaves = graph.get_leaves()
+        total = sum(leaf.probability for leaf in leaves)
+        assert abs(total - 1.0) < 0.01, f"Leaf probabilities sum to {total}, not 1.0"
+
+    def test_leaf_probabilities_sum_to_one_travel(self):
+        _, graph, _ = self._build_graph("I want to move to another country")
+        leaves = graph.get_leaves()
+        total = sum(leaf.probability for leaf in leaves)
+        assert abs(total - 1.0) < 0.01, f"Leaf probabilities sum to {total}, not 1.0"
+
+    def test_mc_convergence_bounded(self):
+        ctx, graph, seed = self._build_graph("Should I invest in stocks")
+        mc_seed = seed.fork("montecarlo")
+        result = run_monte_carlo(graph, mc_seed, n_simulations=10000)
+        assert result.convergence_error < 0.05, (
+            f"MC convergence error {result.convergence_error:.4f} exceeds threshold"
+        )
+
+    def test_mc_convergence_improves_with_samples(self):
+        ctx, graph, seed = self._build_graph("I want to go back to school")
+        small = run_monte_carlo(graph, seed.fork("mc_small"), n_simulations=500)
+        large = run_monte_carlo(graph, seed.fork("mc_large"), n_simulations=10000)
+        assert large.convergence_error <= small.convergence_error + 0.01
+
+    def test_mc_stochastic_walk_produces_variation(self):
+        ctx, graph, seed = self._build_graph("I am thinking of changing careers")
+        result_a = run_monte_carlo(graph, SeedManager(seed=1), n_simulations=5000)
+        result_b = run_monte_carlo(graph, SeedManager(seed=2), n_simulations=5000)
+        counts_a = list(result_a.outcome_counts.values())
+        counts_b = list(result_b.outcome_counts.values())
+        assert counts_a != counts_b, "Different seeds should produce different MC samples"
+
+    def test_consequence_labels_not_all_identical(self):
+        _, graph, _ = self._build_graph(
+            "I want to live abroad but all my friends are in Hong Kong"
+        )
+        leaves = graph.get_leaves()
+        labels = [leaf.label for leaf in leaves]
+        unique_ratio = len(set(labels)) / len(labels) if labels else 0
+        assert unique_ratio > 0.3, (
+            f"Only {unique_ratio:.0%} unique leaf labels -- too much repetition"
+        )
+
+    def test_sibling_probabilities_normalized(self):
+        _, graph, _ = self._build_graph("Should I ask for a promotion")
+        root_children = graph.get_children(graph.root_id)
+        if root_children:
+            edge_probs = [
+                graph.get_edge(graph.root_id, c.node_id).probability
+                for c in root_children
+            ]
+            total = sum(edge_probs)
+            assert abs(total - 1.0) < 0.05, (
+                f"Root children edge probabilities sum to {total}, not 1.0"
+            )

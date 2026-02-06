@@ -203,10 +203,10 @@ if __name__ == "__main__":
     from simulus.ml.generate_data import generate_dataset
 
     print("Generating training data...")
-    generate_dataset(n_samples=2000, output_path="data/training_data.json")
+    generate_dataset(n_samples=3000, output_path="data/training_data.json")
 
     print("Training classifier...")
-    results = train("data/training_data.json", epochs=8)
+    results = train("data/training_data.json", epochs=15)
 
     print(f"\nFinal domain accuracy: {results['val_domain_acc'][-1]:.3f}")
     print(f"Final emotion accuracy: {results['val_emotion_acc'][-1]:.3f}")

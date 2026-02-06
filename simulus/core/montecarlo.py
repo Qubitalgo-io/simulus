@@ -16,6 +16,7 @@ class SimulationResult:
     outcome_sentiments: dict[str, Sentiment] = field(default_factory=dict)
     sentiment_distribution: dict[str, float] = field(default_factory=dict)
     mean_sentiment_score: float = 0.0
+    convergence_error: float = 0.0
 
     @property
     def most_likely_outcome(self) -> str:
@@ -49,16 +50,9 @@ def run_monte_carlo(cg: CausalGraph, seed_mgr: SeedManager,
     if not leaves:
         return SimulationResult(n_simulations=0)
 
-    leaf_ids = [leaf.node_id for leaf in leaves]
-    leaf_probs = np.array([leaf.probability for leaf in leaves])
+    leaf_ids = set(n.node_id for n in leaves)
 
-    total = leaf_probs.sum()
-    if total <= 0:
-        leaf_probs = np.ones(len(leaves)) / len(leaves)
-    else:
-        leaf_probs = leaf_probs / total
-
-    outcome_counts: dict[str, int] = {lid: 0 for lid in leaf_ids}
+    outcome_counts: dict[str, int] = {leaf.node_id: 0 for leaf in leaves}
     outcome_labels: dict[str, str] = {}
     outcome_sentiments: dict[str, Sentiment] = {}
 
@@ -67,10 +61,37 @@ def run_monte_carlo(cg: CausalGraph, seed_mgr: SeedManager,
         outcome_sentiments[leaf.node_id] = leaf.sentiment
 
     rng = np.random.default_rng(seed_mgr.base_seed)
-    samples = rng.choice(len(leaf_ids), size=n_simulations, p=leaf_probs)
 
-    for idx in samples:
-        outcome_counts[leaf_ids[idx]] += 1
+    # stochastic tree walk: at each internal node, sample a child
+    # proportional to the edge probability, with small per-walk noise.
+    # this means each simulation can follow a different path through
+    # the tree, rather than re-sampling from a pre-computed leaf
+    # distribution.
+    noise_scale = 0.02
+
+    for _ in range(n_simulations):
+        current_id = cg.root_id
+        while current_id not in leaf_ids:
+            children = cg.get_children(current_id)
+            if not children:
+                break
+
+            edge_probs = np.array([
+                cg.get_edge(current_id, c.node_id).probability
+                for c in children
+            ], dtype=np.float64)
+
+            # per-walk noise: each simulation is a slightly different
+            # realization of the transition probabilities
+            noise = rng.normal(0.0, noise_scale, size=len(edge_probs))
+            perturbed = np.maximum(edge_probs + noise, 0.001)
+            perturbed /= perturbed.sum()
+
+            chosen_idx = rng.choice(len(children), p=perturbed)
+            current_id = children[chosen_idx].node_id
+
+        if current_id in outcome_counts:
+            outcome_counts[current_id] += 1
 
     sentiment_values = {
         Sentiment.POSITIVE: 1.0,
@@ -92,6 +113,17 @@ def run_monte_carlo(cg: CausalGraph, seed_mgr: SeedManager,
 
     mean_sentiment = total_sentiment / n_simulations if n_simulations > 0 else 0.0
 
+    # convergence diagnostic: maximum absolute difference between the
+    # MC-estimated leaf probabilities and the tree-computed probabilities.
+    # with sufficient samples this should be small (< 0.02 for N=10000).
+    leaf_prob_map = {}
+    total_tree_prob = sum(l.probability for l in leaves)
+    for leaf in leaves:
+        tree_p = leaf.probability / total_tree_prob if total_tree_prob > 0 else 0.0
+        mc_p = outcome_counts[leaf.node_id] / n_simulations if n_simulations > 0 else 0.0
+        leaf_prob_map[leaf.node_id] = abs(tree_p - mc_p)
+    convergence_error = max(leaf_prob_map.values()) if leaf_prob_map else 0.0
+
     return SimulationResult(
         n_simulations=n_simulations,
         outcome_counts=outcome_counts,
@@ -99,4 +131,5 @@ def run_monte_carlo(cg: CausalGraph, seed_mgr: SeedManager,
         outcome_sentiments=outcome_sentiments,
         sentiment_distribution=sentiment_distribution,
         mean_sentiment_score=mean_sentiment,
+        convergence_error=convergence_error,
     )

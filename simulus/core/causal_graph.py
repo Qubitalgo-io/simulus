@@ -99,6 +99,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "risk-reward payoff"},
             {"label": "Work-life balance shifts unexpectedly", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "career change has side effects"},
+            {"label": "Industry contacts take notice", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "network effects amplify success"},
+            {"label": "Confidence in professional judgment grows", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "validated decision reinforces self-trust"},
+            {"label": "A rival responds to the shift", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "competitive dynamics activate"},
+            {"label": "Negotiating leverage increases", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "demonstrated competence creates bargaining power"},
         ],
         "negative": [
             {"label": "Professional relationships strained", "sentiment": Sentiment.NEGATIVE,
@@ -109,6 +117,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "setback requires adaptation"},
             {"label": "Learn from the setback", "sentiment": Sentiment.POSITIVE,
              "mechanism": "failure teaches resilience"},
+            {"label": "Reputation takes a quiet hit", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "failure spreads through network"},
+            {"label": "Self-doubt enters the decision loop", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "negative outcome erodes confidence"},
+            {"label": "A lateral opportunity appears", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "closed door redirects attention"},
+            {"label": "Savings buffer absorbs the impact", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "financial preparation limits damage"},
         ],
         "neutral": [
             {"label": "Workplace dynamics subtly shift", "sentiment": Sentiment.NEUTRAL,
@@ -119,6 +135,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "envy or distrust accumulates"},
             {"label": "A new decision point at work approaches", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "consequences create new choices"},
+            {"label": "Management restructures around you", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "organizational adaptation"},
+            {"label": "Mentorship possibility emerges", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "senior figure recognizes potential"},
+            {"label": "Workload redistributes unevenly", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "change creates imbalance"},
+            {"label": "Industry conditions shift the context", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "external forces reframe the situation"},
         ],
     },
     "relationship": {
@@ -131,6 +155,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "new dynamic requires adjustment"},
             {"label": "Old wounds resurface unexpectedly", "sentiment": Sentiment.NEGATIVE,
              "mechanism": "closeness exposes unresolved pain"},
+            {"label": "Shared plans take shape", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "alignment creates forward momentum"},
+            {"label": "Appreciation is openly expressed", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "gratitude reinforces bond"},
+            {"label": "A boundary is tested", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "closeness probes limits"},
+            {"label": "Outside opinions complicate things", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "third-party influence introduces noise"},
         ],
         "negative": [
             {"label": "Communication breaks down further", "sentiment": Sentiment.NEGATIVE,
@@ -141,6 +173,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "conflict reveals deeper issues"},
             {"label": "Empathy emerges from shared struggle", "sentiment": Sentiment.POSITIVE,
              "mechanism": "adversity can create understanding"},
+            {"label": "Resentment hardens into distance", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "unresolved anger calcifies"},
+            {"label": "A cooling-off period begins", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "both parties retreat to process"},
+            {"label": "Patterns from past relationships repeat", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "attachment style drives behavior"},
+            {"label": "An honest conversation breaks through", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "crisis forces authenticity"},
         ],
         "neutral": [
             {"label": "Relationship enters a holding pattern", "sentiment": Sentiment.NEUTRAL,
@@ -151,6 +191,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "avoidance compounds stress"},
             {"label": "A third party influences the dynamic", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "external actor enters the equation"},
+            {"label": "Routines mask underlying feelings", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "structure substitutes for resolution"},
+            {"label": "A meaningful memory resurfaces", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "nostalgia reframes perspective"},
+            {"label": "Jealousy or insecurity flares", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "uncertainty triggers protective emotions"},
+            {"label": "Life circumstances force a conversation", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "external pressure creates opening"},
         ],
     },
     "health": {
@@ -163,6 +211,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "medical intervention has costs"},
             {"label": "Lifestyle adjustment becomes routine", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "new normal establishes itself"},
+            {"label": "Sleep quality improves noticeably", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "health gains compound through rest"},
+            {"label": "Confidence in body returns", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "physical improvement lifts outlook"},
+            {"label": "Insurance or cost concerns emerge", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "financial dimension of health"},
+            {"label": "A follow-up appointment reveals more", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "ongoing monitoring introduces information"},
         ],
         "negative": [
             {"label": "Condition progresses without treatment", "sentiment": Sentiment.NEGATIVE,
@@ -173,6 +229,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "natural resilience activates"},
             {"label": "Seek a second opinion", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "uncertainty drives information seeking"},
+            {"label": "Daily functioning is affected", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "health impacts capacity"},
+            {"label": "Support network rallies around you", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "crisis activates care"},
+            {"label": "Avoidance delays necessary action", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "denial postpones treatment"},
+            {"label": "A simpler remedy is discovered", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "further investigation finds easier path"},
         ],
         "neutral": [
             {"label": "Health remains stable but uncertain", "sentiment": Sentiment.NEUTRAL,
@@ -183,6 +247,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "health concern activates care"},
             {"label": "Daily routine adapts to new reality", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "gradual normalization"},
+            {"label": "Research reveals new options", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "information seeking uncovers alternatives"},
+            {"label": "Stress from uncertainty affects other areas", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "health anxiety spills over"},
+            {"label": "A window of opportunity for treatment opens", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "timing aligns for action"},
+            {"label": "Priorities are re-evaluated", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "health scare reorders values"},
         ],
     },
     "finance": {
@@ -195,6 +267,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "gains are never secure"},
             {"label": "Lifestyle inflation tempts", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "wealth creates new spending pressure"},
+            {"label": "Compound growth begins to show", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "time amplifies early gains"},
+            {"label": "A diversification opportunity appears", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "success creates optionality"},
+            {"label": "Tax implications surface", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "gains have administrative costs"},
+            {"label": "Overconfidence leads to a risky bet", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "success breeds complacency"},
         ],
         "negative": [
             {"label": "Losses compound under pressure", "sentiment": Sentiment.NEGATIVE,
@@ -205,6 +285,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "necessity drives creativity"},
             {"label": "Reassess financial priorities", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "loss forces honest evaluation"},
+            {"label": "Credit score takes a hit", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "missed obligations cascade"},
+            {"label": "A frugal period forces discipline", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "constraint builds habits"},
+            {"label": "Emergency fund absorbs the shock", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "preparation limits downside"},
+            {"label": "Relationship strain from money stress", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "financial pressure affects bonds"},
         ],
         "neutral": [
             {"label": "Markets move sideways", "sentiment": Sentiment.NEUTRAL,
@@ -215,6 +303,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "inaction has hidden costs"},
             {"label": "Financial decision deadline approaches", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "time pressure forces action"},
+            {"label": "An advisor offers a different perspective", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "external expertise reframes options"},
+            {"label": "Liquidity tightens unexpectedly", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "cash flow constraints bind"},
+            {"label": "A regulatory change shifts the landscape", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "external rules redefine the game"},
+            {"label": "Peer comparison triggers doubt", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "social comparison undermines strategy"},
         ],
     },
     "education": {
@@ -227,6 +323,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "effort has diminishing returns"},
             {"label": "New intellectual direction emerges", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "learning opens unexpected paths"},
+            {"label": "A scholarship or funding opportunity opens", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "merit attracts resources"},
+            {"label": "Peer collaboration deepens understanding", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "social learning amplifies individual gains"},
+            {"label": "Imposter syndrome intensifies", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "success raises internal standards"},
+            {"label": "Academic workload crowds out personal life", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "opportunity cost of commitment"},
         ],
         "negative": [
             {"label": "Confidence in abilities wavers", "sentiment": Sentiment.NEGATIVE,
@@ -237,6 +341,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "failure redirects toward fit"},
             {"label": "Take a strategic pause to regroup", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "rest enables future performance"},
+            {"label": "Financial strain from education costs", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "investment without near-term return"},
+            {"label": "A professor offers unexpected guidance", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "mentorship appears in adversity"},
+            {"label": "Motivation erodes from repeated setbacks", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "learned helplessness pattern"},
+            {"label": "Alternative credentials gain appeal", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "traditional path is questioned"},
         ],
         "neutral": [
             {"label": "Progress continues at steady pace", "sentiment": Sentiment.NEUTRAL,
@@ -247,6 +359,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "bureaucracy impedes goals"},
             {"label": "A crossroads in the academic path", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "completion creates new decisions"},
+            {"label": "Industry demand shifts what is valued", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "external market reshapes priorities"},
+            {"label": "A research opportunity presents itself", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "curiosity finds a channel"},
+            {"label": "Comparison with peers triggers anxiety", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "relative performance weighs on morale"},
+            {"label": "A gap year or break becomes tempting", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "fatigue prompts re-evaluation"},
         ],
     },
     "travel": {
@@ -259,6 +379,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "distance has emotional cost"},
             {"label": "Identity shifts with the landscape", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "environment shapes self-concept"},
+            {"label": "Language or cultural fluency grows", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "immersion accelerates adaptation"},
+            {"label": "A sense of belonging takes root", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "community acceptance builds over time"},
+            {"label": "Longing for familiarity intensifies", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "novelty fatigue sets in"},
+            {"label": "Career prospects broaden internationally", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "global experience becomes an asset"},
         ],
         "negative": [
             {"label": "Isolation deepens without support", "sentiment": Sentiment.NEGATIVE,
@@ -269,6 +397,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "adversity builds capability"},
             {"label": "Consider returning or changing plans", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "reality tests commitment"},
+            {"label": "Financial runway shortens abroad", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "cost of living differences bite"},
+            {"label": "A local ally offers unexpected help", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "kindness from strangers"},
+            {"label": "Bureaucratic obstacles block progress", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "administrative systems resist outsiders"},
+            {"label": "Perspective on home sharpens", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "distance clarifies what was taken for granted"},
         ],
         "neutral": [
             {"label": "Settling into an unfamiliar rhythm", "sentiment": Sentiment.NEUTRAL,
@@ -279,6 +415,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "values clash in new context"},
             {"label": "The next destination calls", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "restlessness or opportunity"},
+            {"label": "Relationships back home evolve with distance", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "absence transforms bonds"},
+            {"label": "A hobby or interest takes new shape abroad", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "new context enriches existing passions"},
+            {"label": "Visa or legal status becomes uncertain", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "institutional precarity"},
+            {"label": "Dual identity begins to form", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "belonging to two worlds at once"},
         ],
     },
     "general": {
@@ -291,6 +435,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "complex systems produce surprises"},
             {"label": "Situation stabilizes at new level", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "system finds new equilibrium"},
+            {"label": "Confidence from the outcome spreads", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "success generalizes to adjacent areas"},
+            {"label": "Others rally to support the direction", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "visible progress attracts allies"},
+            {"label": "Complacency sets in after initial gains", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "success reduces vigilance"},
+            {"label": "The goal posts shift with new information", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "definition of success evolves"},
         ],
         "negative": [
             {"label": "Pressure intensifies from setback", "sentiment": Sentiment.NEGATIVE,
@@ -301,6 +453,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "inertia of negative trajectory"},
             {"label": "Unexpected ally appears", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "adversity reveals hidden support"},
+            {"label": "A different framing suggests a way out", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "reframing changes the solution space"},
+            {"label": "Emotional toll builds cumulatively", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "sustained difficulty drains reserves"},
+            {"label": "External circumstances shift the odds", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "luck or environment intervenes"},
+            {"label": "The sunk cost deepens commitment", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "prior investment resists exit"},
         ],
         "neutral": [
             {"label": "Life continues on its current path", "sentiment": Sentiment.NEUTRAL,
@@ -311,6 +471,14 @@ CONTEXTUAL_CONSEQUENCES: dict[str, dict[str, list[dict]]] = {
              "mechanism": "unaddressed tension grows"},
             {"label": "A fork in the road approaches", "sentiment": Sentiment.NEUTRAL,
              "mechanism": "time creates new decision points"},
+            {"label": "A chance observation sparks an idea", "sentiment": Sentiment.POSITIVE,
+             "mechanism": "serendipity in daily life"},
+            {"label": "Fatigue from indecision sets in", "sentiment": Sentiment.NEGATIVE,
+             "mechanism": "decision paralysis has its own cost"},
+            {"label": "The status quo quietly reasserts itself", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "inertia is the strongest force"},
+            {"label": "Someone else's decision affects yours", "sentiment": Sentiment.NEUTRAL,
+             "mechanism": "interdependence constrains autonomy"},
         ],
     },
 }
@@ -408,16 +576,53 @@ def _generate_node_id(depth: int, branch: int, sub: int = 0) -> str:
     return f"d{depth}_b{branch}_s{sub}"
 
 
+# depth-specific label modifiers to reduce repetition.  When a consequence
+# is selected, its label is varied based on the current tree depth so that
+# the same template does not produce identical strings at every level.
+_DEPTH_QUALIFIERS: dict[int, list[str]] = {
+    2: ["", ""],
+    3: ["A ripple: ", "Gradually, "],
+    4: ["Over time, ", "As a result, "],
+    5: ["Eventually, ", "In the longer term, "],
+    6: ["Ultimately, ", "At the far horizon, "],
+}
+
+
 def _pick_contextual_consequences(domain: str, sentiment_key: str,
                                   seed_mgr: SeedManager,
-                                  count: int = 2) -> list[dict]:
+                                  count: int = 2,
+                                  depth: int = 2,
+                                  used_labels: set[str] | None = None) -> list[dict]:
     domain_consequences = CONTEXTUAL_CONSEQUENCES.get(
         domain, CONTEXTUAL_CONSEQUENCES["general"])
     chain = domain_consequences.get(sentiment_key, domain_consequences["neutral"])
+
+    # build a priority list that avoids recently-used labels
+    if used_labels is None:
+        used_labels = set()
+
+    available = [c for c in chain if c["label"] not in used_labels]
+    if len(available) < count:
+        available = list(chain)
+
     result = []
     for _ in range(count):
-        idx = seed_mgr.integers(0, len(chain))
-        result.append(chain[idx])
+        idx = seed_mgr.integers(0, len(available))
+        chosen = dict(available[idx])
+
+        # apply depth qualifier to reduce visual repetition
+        qualifiers = _DEPTH_QUALIFIERS.get(depth, [""])
+        q_idx = seed_mgr.integers(0, len(qualifiers))
+        qualifier = qualifiers[q_idx]
+        if qualifier and not chosen["label"].startswith(qualifier):
+            chosen["label"] = qualifier + chosen["label"][0].lower() + chosen["label"][1:]
+
+        result.append(chosen)
+        # remove chosen from available for the next pick in this call
+        available = [c for c in available if c["label"] != chain[idx % len(chain)]["label"]]
+        if not available:
+            available = list(chain)
+
     return result
 
 
@@ -528,15 +733,19 @@ def _expand_branch(cg: CausalGraph, parent: CausalNode, decision: dict,
                    seed_mgr: SeedManager, branch_idx: int,
                    max_depth: int, context: SituationContext) -> None:
     current_nodes = [parent]
+    used_labels: set[str] = set()
 
     for depth in range(2, max_depth + 1):
         next_nodes = []
         for sub_idx, current in enumerate(current_nodes):
             current_sentiment = current.sentiment.value
 
-            # pick contextual consequences from the domain-specific pool
             consequences = _pick_contextual_consequences(
-                context.domain, current_sentiment, seed_mgr, count=2)
+                context.domain, current_sentiment, seed_mgr, count=2,
+                depth=depth, used_labels=used_labels)
+
+            for cons in consequences:
+                used_labels.add(cons["label"])
 
             p_split = seed_mgr.uniform(0.3, 0.7)
             probs = [p_split, 1.0 - p_split]

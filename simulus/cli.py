@@ -12,6 +12,7 @@ from simulus.core.montecarlo import run_monte_carlo
 from simulus.renderer.tree import render_tree, render_monte_carlo_results
 from simulus.renderer.effects import header_banner, chaos_reveal, typewriter
 from simulus.renderer.rewind import render_rewind
+from simulus.renderer.explainer import generate_explanation
 
 
 SIMULATION_DEPTH = 6
@@ -92,11 +93,32 @@ def main(scenario: str | None, seed: int | None, butterfly: bool,
     console.print(f"  Overall fate score: [{sentiment_color}]{sentiment:+.3f}[/{sentiment_color}]")
     console.print()
 
+    butterfly_divergence = None
+
     if butterfly:
-        _run_butterfly_mode(graph, perturbation, seed_mgr, console, context)
+        butterfly_divergence = _run_butterfly_mode(graph, perturbation, seed_mgr, console, context)
 
     if rewind is not None:
         _run_rewind_mode(graph, context, seed_mgr, rewind, depth, console)
+
+    explanation = generate_explanation(
+        context, graph, mc_result, sentiment,
+        butterfly_divergence=butterfly_divergence,
+    )
+
+    from rich.panel import Panel
+    from rich.text import Text
+    from textwrap import fill
+
+    wrapped = fill(explanation, width=76)
+    console.print()
+    console.print(Panel(
+        Text(wrapped, style="white"),
+        title="Analysis",
+        border_style="dim cyan",
+        padding=(1, 2),
+    ))
+    console.print()
 
     typewriter("  The future is determined. The seed is set.", console,
                delay=0.05, style="dim white")
@@ -116,6 +138,7 @@ def _run_butterfly_mode(graph, perturbation, seed_mgr, console, context=None):
         label_b="Perturbed Reality",
         console=console,
     )
+    return divergence
 
 
 def _run_rewind_mode(graph, context, seed_mgr, rewind_point, depth, console):
