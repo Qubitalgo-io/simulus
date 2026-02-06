@@ -68,6 +68,7 @@ class SituationContext:
     reversibility: Reversibility = Reversibility.MODERATE
     conflict_vectors: list[ConflictVector] = field(default_factory=list)
     volatility: float = 0.5
+    ml_signals: dict = field(default_factory=dict)
 
     @property
     def summary(self) -> str:
@@ -459,18 +460,12 @@ def _compute_stake_severity(domain: str, text: str,
     return min(1.0, max(0.1, base + precondition_shift + reversibility_shift))
 
 
-def _try_ml_parse(text: str) -> tuple[str, str, float, float] | None:
+def _try_ml_parse(text: str) -> dict | None:
     try:
         from simulus.ml.ml_parser import is_model_available, predict
         if not is_model_available():
             return None
-        result = predict(text)
-        return (
-            result["domain"],
-            result["emotion"],
-            result["domain_confidence"],
-            result["emotion_confidence"],
-        )
+        return predict(text)
     except Exception:
         return None
 
@@ -489,9 +484,18 @@ def parse_situation(text: str) -> SituationContext:
     keyword_emotion = _detect_emotion(text)
 
     if ml_result is not None:
-        ml_domain, ml_emotion, domain_conf, emotion_conf = ml_result
+        ml_domain = ml_result["domain"]
+        ml_emotion = ml_result["emotion"]
+        domain_conf = ml_result["domain_confidence"]
+        emotion_conf = ml_result["emotion_confidence"]
         ctx.domain = ml_domain if domain_conf >= ML_CONFIDENCE_THRESHOLD else keyword_domain
         ctx.emotional_state = ml_emotion if emotion_conf >= ML_CONFIDENCE_THRESHOLD else keyword_emotion
+        ctx.ml_signals = {
+            "domain_distribution": ml_result.get("domain_distribution", {}),
+            "emotion_distribution": ml_result.get("emotion_distribution", {}),
+            "domain_confidence": domain_conf,
+            "emotion_confidence": emotion_conf,
+        }
     else:
         ctx.domain = keyword_domain
         ctx.emotional_state = keyword_emotion

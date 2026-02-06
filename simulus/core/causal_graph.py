@@ -731,20 +731,33 @@ def _pick_contextual_consequences(domain: str, sentiment_key: str,
             context, sentiment_key, seed_mgr, count=len(chain))
         chain = chain + ctx_consequences
 
-    # build a priority list that avoids recently-used labels
     if used_labels is None:
         used_labels = set()
 
+    # filter by BASE label (before depth qualifiers are applied) to prevent
+    # the same underlying consequence from appearing at multiple depths
+    # with different prefixes
     available = [c for c in chain if c["label"] not in used_labels]
+    if len(available) < count:
+        # pick from the least-used sentiment pool as overflow
+        overflow_key = {"positive": "neutral", "negative": "neutral",
+                        "neutral": "positive"}.get(sentiment_key, "neutral")
+        overflow = domain_consequences.get(overflow_key, [])
+        extra = [c for c in overflow if c["label"] not in used_labels]
+        available = available + extra
     if len(available) < count:
         available = list(chain)
 
     result = []
     for _ in range(count):
+        if not available:
+            available = list(chain)
         idx = seed_mgr.integers(0, len(available))
         chosen = dict(available[idx])
 
-        # apply depth qualifier to reduce visual repetition
+        # track the base label BEFORE qualifier is applied
+        used_labels.add(chosen["label"])
+
         qualifiers = _DEPTH_QUALIFIERS.get(depth, [""])
         q_idx = seed_mgr.integers(0, len(qualifiers))
         qualifier = qualifiers[q_idx]
@@ -752,10 +765,8 @@ def _pick_contextual_consequences(domain: str, sentiment_key: str,
             chosen["label"] = qualifier + chosen["label"][0].lower() + chosen["label"][1:]
 
         result.append(chosen)
-        # remove chosen from available for the next pick in this call
-        available = [c for c in available if c["label"] != chain[idx % len(chain)]["label"]]
-        if not available:
-            available = list(chain)
+        available = [c for c in available if c is not chain[idx % len(chain)]
+                     and c["label"] not in used_labels]
 
     return result
 
@@ -877,9 +888,6 @@ def _expand_branch(cg: CausalGraph, parent: CausalNode, decision: dict,
             consequences = _pick_contextual_consequences(
                 context.domain, current_sentiment, seed_mgr, count=2,
                 depth=depth, used_labels=used_labels, context=context)
-
-            for cons in consequences:
-                used_labels.add(cons["label"])
 
             p_split = seed_mgr.uniform(0.3, 0.7)
             probs = [p_split, 1.0 - p_split]

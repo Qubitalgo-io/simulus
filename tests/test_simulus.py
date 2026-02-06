@@ -9,7 +9,12 @@ from simulus.core.chaos import (
     compute_adaptive_exponent,
 )
 from simulus.core.montecarlo import run_monte_carlo
-from simulus.renderer.explainer import generate_explanation
+from simulus.renderer.explainer import (
+    generate_explanation,
+    _conflict_note,
+    _stakes_note,
+    _emotional_context_note,
+)
 
 
 class TestDeterminism:
@@ -436,6 +441,91 @@ class TestExplainer:
         exp_a = generate_explanation(ctx_a, graph_a, mc_a, sent_a)
         exp_b = generate_explanation(ctx_b, graph_b, mc_b, sent_b)
         assert exp_a == exp_b
+
+
+class TestExplainerContext:
+
+    def test_stakes_note_surfaces_stakes(self):
+        ctx = parse_situation("I might lose my house and my savings")
+        note = _stakes_note(ctx)
+        assert note != ""
+        assert "on the line" in note.lower()
+
+    def test_stakes_note_empty_when_no_stakes(self):
+        from simulus.core.parser import SituationContext
+        ctx = SituationContext(raw_input="nothing")
+        assert _stakes_note(ctx) == ""
+
+    def test_conflict_note_surfaces_conflict(self):
+        ctx = parse_situation("My boss wants me to stay but I want to leave")
+        note = _conflict_note(ctx)
+        if ctx.conflict_vectors:
+            assert note != ""
+            assert "conflict" in note.lower() or "tension" in note.lower()
+
+    def test_conflict_note_empty_when_none(self):
+        from simulus.core.parser import SituationContext
+        ctx = SituationContext(raw_input="nothing")
+        assert _conflict_note(ctx) == ""
+
+    def test_emotional_context_note_with_ml_signals(self):
+        from simulus.core.parser import SituationContext
+        ctx = SituationContext(
+            raw_input="test",
+            emotional_state="anxiety",
+            ml_signals={
+                "emotion_distribution": {
+                    "anxiety": 0.50,
+                    "fear": 0.28,
+                    "neutral": 0.10,
+                    "hopeful": 0.05,
+                    "anger": 0.04,
+                    "sadness": 0.03,
+                },
+                "emotion_confidence": 0.50,
+            },
+        )
+        note = _emotional_context_note(ctx)
+        assert "anxiety" in note.lower()
+        assert "fear" in note.lower()
+
+    def test_emotional_context_note_without_ml(self):
+        from simulus.core.parser import SituationContext
+        ctx = SituationContext(raw_input="test", emotional_state="anxiety")
+        note = _emotional_context_note(ctx)
+        assert "anxiety" in note.lower()
+
+    def test_emotional_context_note_neutral_no_ml(self):
+        from simulus.core.parser import SituationContext
+        ctx = SituationContext(raw_input="test", emotional_state="neutral")
+        note = _emotional_context_note(ctx)
+        assert note == ""
+
+    def test_emotional_context_note_low_confidence(self):
+        from simulus.core.parser import SituationContext
+        ctx = SituationContext(
+            raw_input="test",
+            emotional_state="anxiety",
+            ml_signals={
+                "emotion_distribution": {"anxiety": 0.3, "neutral": 0.25},
+                "emotion_confidence": 0.3,
+            },
+        )
+        note = _emotional_context_note(ctx)
+        assert "ambiguous" in note.lower()
+
+    def test_full_explanation_includes_stakes(self):
+        seed = SeedManager(seed=42)
+        ctx = parse_situation("I want to quit my job and risk losing my income")
+        graph = build_causal_graph(ctx, seed, max_depth=6)
+        b_seed = seed.fork("bayesian")
+        update_graph_probabilities(graph, ctx.domain, ctx.emotional_state,
+                                   b_seed, context=ctx)
+        mc_seed = seed.fork("montecarlo")
+        mc_result = run_monte_carlo(graph, mc_seed, n_simulations=1000)
+        sentiment = expected_sentiment_score(graph)
+        explanation = generate_explanation(ctx, graph, mc_result, sentiment)
+        assert "on the line" in explanation.lower() or "stakes" in explanation.lower()
 
 
 class TestStatisticalValidity:

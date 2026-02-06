@@ -120,6 +120,106 @@ def _divergence_note(butterfly_divergence: float | None) -> str:
             "trajectories diverge exponentially with depth.")
 
 
+def _conflict_note(context: SituationContext) -> str:
+    if not context.conflict_vectors:
+        return ""
+
+    cv = context.conflict_vectors[0]
+    a = cv.actor_a.title() if cv.actor_a != "self" else "you"
+    b = cv.actor_b.title() if cv.actor_b != "self" else "you"
+
+    if cv.actor_a == "self" or cv.actor_b == "self":
+        other = b if cv.actor_a == "self" else a
+        nature = cv.nature.lower()
+        if cv.intensity > 0.6:
+            return (f"There is a pronounced tension between {other} and "
+                    f"your own position: {nature}. This internal friction "
+                    "amplifies the uncertainty at every branch point.")
+        return (f"A conflict exists between {other} and your stance: "
+                f"{nature}. This shapes how the branches diverge.")
+
+    if cv.intensity > 0.6:
+        return (f"A high-intensity conflict between {a} and {b} -- "
+                f"{cv.nature.lower()} -- adds significant unpredictability.")
+    return (f"There is a conflict between {a} and {b}: "
+            f"{cv.nature.lower()}.")
+
+
+def _stakes_note(context: SituationContext) -> str:
+    if not context.stakes:
+        return ""
+
+    named = [s for s in context.stakes[:3]]
+    severity = context.stake_severity
+
+    if severity > 0.7:
+        qualifier = "The stakes are high"
+    elif severity > 0.4:
+        qualifier = "The stakes are moderate"
+    else:
+        qualifier = "The stakes are relatively low"
+
+    if len(named) == 1:
+        return f"{qualifier}: {named[0].lower()} is on the line."
+    return (f"{qualifier}: {', '.join(s.lower() for s in named[:-1])} "
+            f"and {named[-1].lower()} are all on the line.")
+
+
+def _emotional_context_note(context: SituationContext) -> str:
+    ml = context.ml_signals
+    emotion = context.emotional_state
+
+    if ml and "emotion_distribution" in ml:
+        dist = ml["emotion_distribution"]
+        confidence = ml.get("emotion_confidence", 0.0)
+
+        if not dist:
+            return _simple_emotion_note(emotion)
+
+        sorted_emotions = sorted(dist.items(), key=lambda x: x[1], reverse=True)
+        top_emotion, top_prob = sorted_emotions[0]
+
+        if len(sorted_emotions) > 1:
+            second_emotion, second_prob = sorted_emotions[1]
+        else:
+            return _simple_emotion_note(emotion)
+
+        if confidence < 0.5:
+            return ("The emotional signal is ambiguous -- the model cannot "
+                    "confidently classify the affect, which itself suggests "
+                    "unresolved internal tension.")
+
+        if second_prob > 0.2 and top_prob - second_prob < 0.3:
+            return (f"The model reads the dominant affect as {top_emotion}, "
+                    f"but there is a secondary signal of {second_emotion} "
+                    f"({second_prob:.0%}). This mixed emotional state "
+                    "introduces additional branching volatility.")
+
+        return (f"The model reads the primary affect as {top_emotion} "
+                f"(confidence: {top_prob:.0%}). This emotional baseline "
+                "colors the probability weighting at each decision point.")
+
+    return _simple_emotion_note(emotion)
+
+
+def _simple_emotion_note(emotion: str) -> str:
+    if emotion == "neutral":
+        return ""
+
+    descriptors = {
+        "anxiety": "an undercurrent of anxiety, which tends to amplify worst-case branches",
+        "hopeful": "a hopeful orientation, which weights toward opportunity-seeking paths",
+        "fear": "a fearful baseline, which biases the model toward avoidance trajectories",
+        "anger": "an angry affect, which increases the probability of confrontational branches",
+        "sadness": "a melancholic tone, which shifts weight toward loss-related outcomes",
+        "excited": "an excited energy, which amplifies both upside and downside extremes",
+    }
+    desc = descriptors.get(emotion)
+    if desc:
+        return f"The emotional context carries {desc}."
+    return f"The detected emotional state is {emotion}."
+
+
 def generate_explanation(context: SituationContext,
                          cg: CausalGraph,
                          mc_result: SimulationResult,
@@ -159,6 +259,19 @@ def generate_explanation(context: SituationContext,
     # top outcomes
     outcome_text = _outcome_summary(mc_result)
     sections.append(outcome_text)
+
+    # situation-specific texture
+    stakes_text = _stakes_note(context)
+    if stakes_text:
+        sections.append(stakes_text)
+
+    conflict_text = _conflict_note(context)
+    if conflict_text:
+        sections.append(conflict_text)
+
+    emotion_text = _emotional_context_note(context)
+    if emotion_text:
+        sections.append(emotion_text)
 
     # actor dynamics
     actor_text = _actor_note(context)
